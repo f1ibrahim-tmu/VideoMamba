@@ -159,6 +159,39 @@ if not SKIP_CUDA_BUILD:
         )
     )
 
+    # Add the new RK discretization extension
+    ext_modules.append(
+        CUDAExtension(
+            name="rk_discretize_cuda",
+            sources=[
+                "csrc/rk_discretize/rk_discretize_cuda.cpp",
+                "csrc/rk_discretize/rk_discretize_cuda_kernel.cu",
+            ],
+            extra_compile_args={
+                "cxx": ["-O3", "-std=c++17"],
+                "nvcc": append_nvcc_threads(
+                    [
+                        "-O3",
+                        "-std=c++17",
+                        "-U__CUDA_NO_HALF_OPERATORS__",
+                        "-U__CUDA_NO_HALF_CONVERSIONS__",
+                        "-U__CUDA_NO_BFLOAT16_OPERATORS__",
+                        "-U__CUDA_NO_BFLOAT16_CONVERSIONS__",
+                        "-U__CUDA_NO_BFLOAT162_OPERATORS__",
+                        "-U__CUDA_NO_BFLOAT162_CONVERSIONS__",
+                        "--expt-relaxed-constexpr",
+                        "--expt-extended-lambda",
+                        "--use_fast_math",
+                        "--ptxas-options=-v",
+                        "-lineinfo",
+                    ]
+                    + cc_flag
+                ),
+            },
+            include_dirs=[Path(this_dir) / "csrc" / "rk_discretize"],
+        )
+    )
+
 
 def get_package_version():
     with open(Path(this_dir) / PACKAGE_NAME / "__init__.py", "r") as f:
